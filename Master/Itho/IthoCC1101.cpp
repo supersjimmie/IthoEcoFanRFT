@@ -230,11 +230,11 @@ void IthoCC1101::initReceive()
 	Channel spacing		199.951172kHz
 	Carrier frequency	868.299866MHz
 	Xtal frequency		26.000000MHz
-	Data rate			38.3835kBaud
-	RX filter BW		325.000000kHz
+	Data rate			8.00896kBaud
+	RX filter BW		67.708333kHz
 	Manchester			disabled
 	Modulation			2-FSK
-	Deviation			50.781250kHz
+	Deviation			25.390625kHz
 	TX power			0x6F,0x26,0x2E,0x7F,0x8A,0x84,0xCA,0xC4
 	PA ramping			enabled
 	Whitening			disabled
@@ -261,13 +261,13 @@ void IthoCC1101::initReceive()
 	writeRegister(CC1101_IOCFG2 ,0x2E);			//High impedance (3-state)
 	writeRegister(CC1101_FSCTRL1 ,0x06);
 	writeRegister(CC1101_FSCTRL0 ,0x00);
-	writeRegister(CC1101_MDMCFG4 ,0x5A);
-	writeRegister(CC1101_MDMCFG3 ,0x83);
+	writeRegister(CC1101_MDMCFG4 ,0xE8);
+	writeRegister(CC1101_MDMCFG3 ,0x43);
 	writeRegister(CC1101_MDMCFG2 ,0x00);		//Enable digital DC blocking filter before demodulator, 2-FSK, Disable Manchester encoding/decoding, No preamble/sync 
 	writeRegister(CC1101_MDMCFG1 ,0x22);		//Disable FEC
 	writeRegister(CC1101_MDMCFG0 ,0xF8);
 	writeRegister(CC1101_CHANNR ,0x00);
-	writeRegister(CC1101_DEVIATN ,0x50);
+	writeRegister(CC1101_DEVIATN ,0x40);
 	writeRegister(CC1101_FREND1 ,0x56);
 	writeRegister(CC1101_FREND0 ,0x17);
 	writeRegister(CC1101_MCSM0 ,0x18);			//no auto calibrate
@@ -276,10 +276,11 @@ void IthoCC1101::initReceive()
 	writeRegister(CC1101_AGCCTRL2 ,0x43);
 	writeRegister(CC1101_AGCCTRL1 ,0x40);
 	writeRegister(CC1101_AGCCTRL0 ,0x91);
-	writeRegister(CC1101_FSCAL3 ,0xA9);
+	// Frequency Synthesizer Calibration For 868.299866
+	writeRegister(CC1101_FSCAL3 ,0xE9);
 	writeRegister(CC1101_FSCAL2 ,0x2A);
 	writeRegister(CC1101_FSCAL1 ,0x00);
-	writeRegister(CC1101_FSCAL0 ,0x11);
+	writeRegister(CC1101_FSCAL0 ,0x1F);
 	writeRegister(CC1101_FSTEST ,0x59);
 	writeRegister(CC1101_TEST2 ,0x81);
 	writeRegister(CC1101_TEST1 ,0x35);
@@ -289,7 +290,7 @@ void IthoCC1101::initReceive()
 	writeRegister(CC1101_ADDR ,0x00);
 	writeRegister(CC1101_PKTLEN ,0xFF);
 	writeRegister(CC1101_TEST0 ,0x09);
-	writeRegister(CC1101_FSCAL2 ,0x00);
+	//writeRegister(CC1101_FSCAL2 ,0x00);
 
 	writeCommand(CC1101_SCAL);
 
@@ -318,9 +319,9 @@ void IthoCC1101::initReceiveMessage1()
 	writeCommand(CC1101_SIDLE);	//idle
 	
 	//set datarate
-	writeRegister(CC1101_MDMCFG4 ,0x08);
+	writeRegister(CC1101_MDMCFG4 ,0xE8); //RX filter BW : 67.708333 Khz. Datarate: 8.00896kBaud
 	writeRegister(CC1101_MDMCFG3 ,0x43);
-	writeRegister(CC1101_DEVIATN ,0x40);
+	writeRegister(CC1101_DEVIATN ,0x40); //Deviation: 25.390625 Khz
 		
 	//set fifo mode with fixed packet length and sync bytes
 	writeRegister(CC1101_PKTLEN , 15);		//15 bytes message (sync at beginning of message is removed by CC1101)
@@ -350,9 +351,9 @@ void IthoCC1101::initReceiveMessage2(IthoCommand expectedCommand)
 	writeCommand(CC1101_SIDLE);	//idle
 	
 	//set datarate	
-	writeRegister(CC1101_MDMCFG4 ,0x5A);
+	writeRegister(CC1101_MDMCFG4 ,0x9A); //RX filter BW : 162.500000 Khz Datarate: 38.3835kBaud
 	writeRegister(CC1101_MDMCFG3 ,0x83);
-	writeRegister(CC1101_DEVIATN ,0x50);
+	writeRegister(CC1101_DEVIATN ,0x50); //Deviation: 50.781250kHz
 	
 	//set packet length based on expected message
 	switch (expectedCommand)
