@@ -1,6 +1,6 @@
 /*
- * Author: Klusjesman, modified bij supersjimmie for Arduino/ESP8266
- * modified and combined by racquemis and TechApprentice and balk77 for 2 additional modes on ESP
+ * Author: Klusjesman, modified by supersjimmie for Arduino/ESP8266
+ * modified and combined by racquemis and TechApprentice for 2 additional modes on ESP
  */
 
 #include "IthoCC1101.h"
@@ -64,7 +64,7 @@ void IthoCC1101::initSendMessage1()
 	writeRegister(CC1101_CHANNR ,0x00);		//00000000
 	writeRegister(CC1101_DEVIATN ,0x40);	//01000000
 	writeRegister(CC1101_FREND0 ,0x17);		//00010111	use index 7 in PA table
-	writeRegister(CC1101_MCSM0 ,0x18);		//00011000	PO timeout Approx. 146µs - 171µs, Auto calibrate When going from IDLE to RX or TX (or FSTXON)	
+	writeRegister(CC1101_MCSM0 ,0x18);		//00011000	PO timeout Approx. 146µs - 171µs, Auto calibrate When going from IDLE to RX or TX (or FSTXON)
 	writeRegister(CC1101_FSCAL3 ,0xA9);		//10101001
 	writeRegister(CC1101_FSCAL2 ,0x2A);		//00101010
 	writeRegister(CC1101_FSCAL1 ,0x00);		//00000000
@@ -314,7 +314,7 @@ void IthoCC1101::initReceive()
 
 void IthoCC1101::initReceiveMessage1()
 {
-	uint8_t marcState;
+ 	uint8_t marcState;
 	
 	writeCommand(CC1101_SIDLE);	//idle
 	
@@ -402,7 +402,7 @@ bool IthoCC1101::checkForNewPacket()
 		case ExpectMessageStart:
 			length = receiveData(&inMessage1, 15);
 			//check if message1 is received
-			
+
 			if ((length > 0) && (isValidMessageStart()))
 			{
 				Serial.print("Received Message1 bytes: ");
@@ -418,7 +418,7 @@ bool IthoCC1101::checkForNewPacket()
 		
 		case ExpectNormalCommand:
 			length = receiveData(&inMessage2, 42);
-
+	
 			//check if message2 is received
 			if ((length > 0) && (isValidMessageCommand()))
 			{
@@ -665,7 +665,7 @@ void IthoCC1101::parseMessageCommand()
 	commandBytes[12] = inMessage2.data[30];		
 	commandBytes[13] = inMessage2.data[31];		
 	commandBytes[14] = inMessage2.data[32];				
-	Serial.println("");			
+	Serial.println("");
 	//match received commandBytes with known command bytes
 	for (int i=0; i<15; i++)
 	{
@@ -1103,7 +1103,7 @@ uint8_t IthoCC1101::calculateMessage2Byte41(uint8_t counter, IthoCommand command
 			break;
 		case IthoAway:
 
-		case IthoFullPower:	
+		case IthoFullPower:
 		case IthoLow:
 		case IthoMedium:
 		case IthoHigh:
@@ -1155,7 +1155,6 @@ uint8_t IthoCC1101::calculateMessage2Byte43(uint8_t counter, IthoCommand command
 		case IthoTimer2:
 			if (counter % 2 == 0) counter -= 1;
 			break;
-			
 		case IthoHigh:
 			counter += 2;
 			if (counter % 2 == 0) counter -= 1;
