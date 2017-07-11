@@ -36,6 +36,13 @@ void CC1101::spi_waitMiso()
 void CC1101::init()
 {
 	reset();
+	Serial.print("CC1101_PARTNUM "); //cc1101=0
+	Serial.println(readRegister(CC1101_PARTNUM, CC1101_STATUS_REGISTER));
+	Serial.print("CC1101_VERSION "); //cc1101=4
+	Serial.println(readRegister(CC1101_VERSION, CC1101_STATUS_REGISTER));
+	Serial.print("CC1101_MARCSTATE ");
+	Serial.println(readRegister(CC1101_MARCSTATE, CC1101_STATUS_REGISTER) & 0x1f);
+
 }
 
 void CC1101::reset()
