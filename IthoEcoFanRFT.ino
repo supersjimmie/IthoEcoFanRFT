@@ -28,21 +28,50 @@ CC11xx pins    ESP pins Arduino pins  Description
 #include <SPI.h>
 #include "IthoCC1101.h"
 #include "IthoPacket.h"
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+
+ESP8266WebServer server;
+char* ssid = "Ziggo02422";
+char* password = "m4J$HDbF4>7P";
 
 IthoCC1101 rf;
 IthoPacket packet;
 
 void setup(void) {
   Serial.begin(115200);
+
+  // connect to wifi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println("");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  // server setup
+  server.on("/", usage);
+  server.on("/press", pressButton);
+  server.begin();
+  Serial.println("Server started");
+  
+
+  
   delay(500);
-  Serial.println("setup begin");
+  //Serial.println("setup begin");
   rf.init();
-  Serial.println("setup done");
+  //Serial.println("setup done");
   sendRegister();
-  Serial.println("join command sent");
+  //Serial.println("join command sent");
 }
 
 void loop(void) {
+  server.handleClient();
+
+  return;
+  
 	//set CC1101 registers
 	rf.initReceive();
 	Serial.print("start\n");
@@ -89,6 +118,45 @@ void loop(void) {
 	yield();
 	} // while 1==1
 } // outer loop
+
+void usage() {
+  server.send(200, "text/plain", "/press?button=low");
+}
+
+void pressButton() {
+   if (!server.hasArg("button")) {
+       return returnFail("Please provide a button, e.g. ?button=low");
+   }
+   
+   String button = server.arg("button");
+   Serial.print("Pressing button: ");
+   Serial.println(button);
+
+   if (button == "low") { 
+       sendLowSpeed();
+   } else if (button == "medium") { 
+       sendMediumSpeed();
+   } else if (button == "high") { 
+       sendFullSpeed();
+   } else if (button == "timer") {     
+       sendTimer();
+   } else {
+      return returnFail("Unknown button. Buttons are: low, medium, high, timer");
+   }
+  
+   returnJson("\"button\": \"" + button + "\"");
+}
+
+void returnJson(String msg)
+{
+    server.send(200, "application/json", "{\"success\": true, "+  msg + "}");
+}
+
+void returnFail(String msg)
+{
+    server.sendHeader("Connection", "close");
+    server.send(500, "application/json", "{\"success\": false, \"message\": \""+ msg + "\"}");
+}
 
 void sendRegister() {
    Serial.println("sending join...");
