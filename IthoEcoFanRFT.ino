@@ -33,7 +33,7 @@ CC11xx pins    ESP pins Arduino pins  Description
 
 ESP8266WebServer server;
 char* ssid = "Ziggo02422";
-char* password = "m4J$HDbF4>7P";
+char* password = "************";
 
 IthoCC1101 rf;
 IthoPacket packet;
