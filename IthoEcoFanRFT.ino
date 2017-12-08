@@ -32,7 +32,7 @@ CC11xx pins    ESP pins Arduino pins  Description
 #include <ESP8266WebServer.h>
 
 ESP8266WebServer server;
-char* ssid = "Ziggo02422";
+char* ssid = "wifissid";
 char* password = "************";
 
 IthoCC1101 rf;
