@@ -44,6 +44,28 @@ const uint8_t ithoMessage2Timer3CommandBytes[] = {6,89,150,170,169,101,90,150,85
 const uint8_t ithoMessage2JoinCommandBytes[] = {9,90,170,90,165,165,89,106,85,149,102,89,150,170,165};
 const uint8_t ithoMessage2LeaveCommandBytes[] = {9,90,170,90,165,165,89,166,85,149,105,90,170,90,165};
 
+// message 2 commands 536-0146 remote
+const uint8_t ithoMessage2_5360146_EcoCommandBytes[] = {38,89,150,170,149,165,90,150,85,149,101,90,86,85,153};
+const uint8_t ithoMessage2_5360146_ComfortCommandBytes[] = {166,89,150,170,149,165,90,150,85,149,101,89,150,85,153};
+const uint8_t ithoMessage2_5360146_Cook1CommandBytes[] =  {102,89,150,170,169,101,90,102,85,149,101,89,150,149,154};
+const uint8_t ithoMessage2_5360146_Cook2CommandBytes[] = {102,89,150,170,169,101,90,102,85,149,101,89,150,165,150};
+const uint8_t ithoMessage2_5360146_Timer1CommandBytes[] = {102,89,150,170,169,101,90,102,85,149,101,153,150,85,169};
+const uint8_t ithoMessage2_5360146_Timer2CommandBytes[]= {102,89,150,170,169,101,90,102,85,149,101,153,150,85,154};
+const uint8_t ithoMessage2_5360146_Timer3CommandBytes[]= {166,89,150,170,169,101,90,102,85,149,101,153,150,85,165};
+const uint8_t ithoMessage2_5360146_JoinCommandBytes[] = {169, 90,170, 90,165,165, 89,106, 85,149,102, 89,150,170,149};
+const uint8_t ithoMessage2_5360146_LeavCommandBytes[] = {105, 90,170, 90,165,165, 89,106, 85,149,102, 89,150,170,149};
+
+// message 2 command 536-0150 remote
+const uint8_t ithoMessage2_5360150_LowCommandBytes[] =    {102,89,150,170,165,101,90,150,105,169,101,89,150,85,150};
+const uint8_t ithoMessage2_5360150_HighCommandBytes[] =   {102,89,150,170,165,101,90,150,105,169,101,89,102,85,150};
+const uint8_t ithoMessage2_5360150_AutoCommandBytes[] =   {102,89,150,170,165,101,90,150,105,169,101,90,150,85,150};
+const uint8_t ithoMessage2_5360150_Auto2CommandBytes[] =  {102,89,150,170,149,165,90,150,105,169,101,89,150,85,169};
+const uint8_t ithoMessage2_5360150_Timer1CommandBytes[] = {166,89,150,170,169,101,90,150,105,169,101,105,86,85,165};
+const uint8_t ithoMessage2_5360150_Timer2CommandBytes[] = {102,89,150,170,169,101,90,150,105,169,101,105,86,85,153};
+const uint8_t ithoMessage2_5360150_Timer3CommandBytes[] = {102,89,150,170,169,101,90,150,105,169,101,105,86,85,169};
+const uint8_t ithoMessage2_5360150_JoinCommandBytes[] =   {105,90,170,90,165,165,89,106,105,169,102,89,150,170,149};
+const uint8_t ithoMessage2_5360150_LeaveCommandBytes[] =  {169,90,170,90,165,165,89,166,105,169,105,90,170,90,165};
+
 //message 2, counter
 const uint8_t counterBytes24a[] = {1,2};
 const uint8_t counterBytes24b[] = {84,148,100,164,88,152,104,168};
@@ -59,7 +81,7 @@ const uint8_t counterBytes66[] = {170,106};
 
 
 //state machine
-typedef enum IthoReceiveStates
+enum IthoReceiveStates
 {
 	ExpectMessageStart,
 	ExpectNormalCommand,

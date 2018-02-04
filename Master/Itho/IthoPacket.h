@@ -6,7 +6,7 @@
 #define ITHOPACKET_H_
 
 
-typedef enum IthoMessageType
+enum IthoMessageType
  {
  	ithomsg_unknown = 0,
  	ithomsg_control = 1,
@@ -32,6 +32,13 @@ enum IthoCommand
 	IthoTimer2 = 51,
 	IthoTimer3 = 61,
 	
+	// preliminary values
+	IthoHome1  = 200,
+	IthoHome2  = 201,
+	IthoCook   = 202,
+	IthoTimer  = 203,
+
+
 	//duco c system remote
 	DucoStandby = 251,
 	DucoLow = 252,

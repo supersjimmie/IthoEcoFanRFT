@@ -29,15 +29,23 @@
 #include "IthoPacket.h"
 #include <Ticker.h>
 
+#include <ESP8266WiFi.h>
+#include <PubSubClient.h>
+
 #define ITHO_IRQ_PIN D2
 
 IthoCC1101 rf;
 IthoPacket packet;
 Ticker ITHOticker;
 
-const uint8_t RFTid[] = {106, 170, 106, 101, 154, 107, 154, 86}; // my ID
+//const uint8_t RFTid[] = {106, 170, 106, 101, 154, 107, 154, 86}; // my ID
+const uint8_t RFTid1[] = {0x69,0x99,0x96,0x99,0x95,0x6a,0x6a,0x5a}; // my ID
+const uint8_t RFTid2[] = {0x6a,0x99,0x66,0xaa,0xa9,0x66,0x6a,0xaa}; // badkamer
 
 bool ITHOhasPacket = false;
+bool ITHOhasValidPacket = false;
+bool ITHOhasValidId = false;
+
 IthoCommand RFTcommand[3] = {IthoUnknown, IthoUnknown, IthoUnknown};
 byte RFTRSSI[3] = {0, 0, 0};
 byte RFTcommandpos = 0;
@@ -46,16 +54,125 @@ IthoCommand RFTstate = IthoUnknown;
 IthoCommand savedRFTstate = IthoUnknown;
 bool RFTidChk[3] = {false, false, false};
 
-void setup(void) {
-  Serial.begin(115200);
-  delay(500);
-  Serial.println("setup begin");
+const char* ssid     = "";
+const char* password = "";
+WiFiClient espClient;
+
+void setupWifi()
+{
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void setupRf(void)
+{
+  Serial.println("setup rf begin");
   rf.init();
-  Serial.println("setup done");
   sendRegister();
   Serial.println("join command sent");
   pinMode(ITHO_IRQ_PIN, INPUT);
   attachInterrupt(ITHO_IRQ_PIN, ITHOinterrupt, RISING);
+}
+
+PubSubClient client(espClient);
+
+void setupMqtt()
+{
+  //connect to MQTT server
+  client.setServer("pi3.lan", 1883);
+  client.setCallback(callback);
+}
+
+
+//print any message received for subscribed topic
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+
+  Serial.print("] (l=");
+  Serial.print(length);
+  Serial.print(") ");
+
+  for (int i=0;i<length;i++) {
+    Serial.print(payload[i], HEX);
+  }
+  Serial.println();
+
+  // prep send
+  CC1101Packet packet;
+  packet.length = length + 9;
+  packet.data[0] = 170;
+  packet.data[1] = 170;
+  packet.data[2] = 170;
+  packet.data[3] = 170;
+  packet.data[4] = 170;
+  packet.data[5] = 170;
+  packet.data[6] = 170;				
+  packet.data[7] = 171;	
+  for (int i=0;i<length;i++) {
+    packet.data[i+8] = payload[i];
+  }
+
+  /*
+  printf ("pack %d:", packet.length);
+  for (int i = 0; i < packet.length; i++) {
+    printf (" %2x", packet.data[i]);
+    fflush (stdout);
+  }
+  printf("\n");
+  fflush (stdout);
+  Serial.println("");
+  */
+  
+  int delaytime = 500;
+  uint8_t maxTries = 3;
+
+  //detachInterrupt(ITHO_IRQ_PIN);
+  //rf.sendPacket(packet);
+  setupRf();
+}
+
+
+void reconnect() {
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Attempt to connect, just a name to identify the client
+    if (client.connect("NANO","xxxxxx","xxxxxxxxxxx")) {
+      Serial.println("connected");
+      // Once connected, publish an announcement...
+      // client.publish("outpic","Hello World");
+      // ... and resubscribe
+      client.subscribe("itho/command", 0);
+
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
+}
+
+void setup(void) {
+  Serial.begin(115200);
+  delay(500);
+  setupWifi();
+  setupMqtt();
+  delay(500);
+  setupRf();
 }
 
 void loop(void) {
@@ -63,6 +180,12 @@ void loop(void) {
   if (ITHOhasPacket) {
     showPacket();
   }
+  // put your main code here, to run repeatedly:
+  if (!client.connected()) {
+     reconnect();
+  }
+  client.loop();
+  //delay(100);
 }
 
 void ITHOinterrupt() {
@@ -75,16 +198,46 @@ void ITHOcheck() {
     if (++RFTcommandpos > 2) RFTcommandpos = 0;  // store information in next entry of ringbuffers
     RFTcommand[RFTcommandpos] = cmd;
     RFTRSSI[RFTcommandpos]    = rf.ReadRSSI();
-    bool chk = rf.checkID(RFTid);
+
+    bool chk = rf.checkID(RFTid1) | rf.checkID(RFTid2);
+    ITHOhasValidId = chk;
     RFTidChk[RFTcommandpos]   = chk;
+
+    ITHOhasPacket = true;
     if ((cmd != IthoUnknown) && chk) {  // only act on good cmd and correct id.
-      ITHOhasPacket = true;
+      ITHOhasValidPacket = true;
     }
   }
 }
 
 void showPacket() {
   ITHOhasPacket = false;
+  String id = rf.getLastIDstr();
+  String msg = rf.getLastMessage2str (true);
+
+  Serial.print(id);
+  Serial.print(" -> ");
+  Serial.println(msg);
+  fflush(stdin);
+  msg = msg.substring(10);
+  msg.replace(":", "");
+  int r = client.publish("itho/ventilatie", msg.c_str());
+  if (r == 0) {
+    Serial.println("Error publishing message");
+  }
+  
+  if (!ITHOhasValidPacket) {
+    if (ITHOhasValidId) {
+      //printf("unknown command: %s\n", rf.getLastCommandStr(false).c_str());
+      fflush(stdin);
+    }
+    return;
+  }
+  //printf("known command: %s\n", rf.getLastCommandStr(false).c_str());  
+  printf ("\tcounter = %d\n", rf.getLastInCounter());
+  fflush(stdin);
+
+  ITHOhasValidPacket = false;
   uint8_t goodpos = findRFTlastCommand();
   if (goodpos != -1)  RFTlastCommand = RFTcommand[goodpos];
   else                RFTlastCommand = IthoUnknown;
@@ -147,6 +300,20 @@ void showPacket() {
     case IthoLeave:
       Serial.print("leave\n");
       break;
+    case IthoHome1:
+      Serial.print ("home1\n");
+      break;
+    case IthoHome2:
+      Serial.print ("home2\n");
+      break;
+    case IthoCook:
+      Serial.print ("hood\n");
+      break;
+    case IthoTimer:
+      Serial.print ("timer\n");
+      break;
+    default:
+      Serial.print ("-\n");
   }
 }
 
