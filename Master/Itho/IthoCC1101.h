@@ -130,6 +130,7 @@ class IthoCC1101 : protected CC1101
 		String getLastIDstr(bool ashex=true);
 		String getLastMessage2str(bool ashex=true);
 
+		CC1101Packet& getLastMessagePacket() { return inMessage2; }
 				
 		//send
 		void sendCommand(IthoCommand command);
