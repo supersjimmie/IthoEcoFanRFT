@@ -393,6 +393,11 @@ void IthoCC1101::parseMessageCommand()
 	bool isTimer3Command = true;
 	bool isJoinCommand = true;
 	bool isLeaveCommand = true;
+	bool isH1Command = true;
+	bool isH2Command = true;
+	bool isCookCommand = true;
+	bool isTimerCommand = true;
+
 
 	//device id
 	memcpy(inIthoPacket.deviceId2, &inMessage2.data[8], sizeof inIthoPacket.deviceId2);
@@ -414,6 +419,11 @@ void IthoCC1101::parseMessageCommand()
 		if (inMessage2.data[i+18] != ithoMessage2Timer3CommandBytes[i])  isTimer3Command = false;
 		if (inMessage2.data[i+18] != ithoMessage2JoinCommandBytes[i])    isJoinCommand = false;
 		if (inMessage2.data[i+18] != ithoMessage2LeaveCommandBytes[i])   isLeaveCommand = false;
+		if (inMessage2.data[i+18] != ithoMessage2_5360146_EcoCommandBytes[i])      isH1Command = false;
+		if (inMessage2.data[i+18] != ithoMessage2_5360146_ComfortCommandBytes[i])      isH2Command = false;
+		if (inMessage2.data[i+18] != ithoMessage2_5360146_Cook1CommandBytes[i])      isCookCommand = false;
+		if (inMessage2.data[i+18] != ithoMessage2_5360146_Timer1CommandBytes[i])      isTimerCommand = false;
+
 	}	
 		
 	//determine command
@@ -428,6 +438,10 @@ void IthoCC1101::parseMessageCommand()
 	if (isTimer3Command)  inIthoPacket.command = IthoTimer3;
 	if (isJoinCommand)    inIthoPacket.command = IthoJoin;
 	if (isLeaveCommand)   inIthoPacket.command = IthoLeave;	
+	if (isH1Command)      inIthoPacket.command = IthoHome1;
+	if (isH2Command)      inIthoPacket.command = IthoHome2;
+	if (isCookCommand)    inIthoPacket.command = IthoCook;
+	if (isTimerCommand)   inIthoPacket.command = IthoTimer;
 }
 
 void IthoCC1101::sendCommand(IthoCommand command)
@@ -995,9 +1009,16 @@ String IthoCC1101::getLastIDstr(bool ashex) {
 String IthoCC1101::getLastMessage2str(bool ashex) {
     String str = "Length="+ String(inMessage2.length) + ".";
     for (uint8_t i=0; i<inMessage2.length;i++) {
-        if (ashex) str += String(inMessage2.data[i], HEX);
-        else str += String(inMessage2.data[i]);
-		if (i<inMessage2.length-1) str += ":";
+      if (ashex) {
+	if (inMessage2.data[i] == 0) {
+	  str += "0";
+	}
+	str += String(inMessage2.data[i], HEX);
+      }
+      else {
+	str += String(inMessage2.data[i]);
+      }
+      if (i<inMessage2.length-1) str += ":";
     }
     return str;
 }
