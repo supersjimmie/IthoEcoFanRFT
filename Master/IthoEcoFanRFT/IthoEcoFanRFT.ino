@@ -27,13 +27,11 @@
 #include <SPI.h>
 #include "IthoCC1101.h"
 #include "IthoPacket.h"
-#include <Ticker.h>
 
 #define ITHO_IRQ_PIN D2
 
 IthoCC1101 rf;
 IthoPacket packet;
-Ticker ITHOticker;
 
 const uint8_t RFTid[] = {106, 170, 106, 101, 154, 107, 154, 86}; // my ID
 
@@ -55,7 +53,7 @@ void setup(void) {
   sendRegister();
   Serial.println("join command sent");
   pinMode(ITHO_IRQ_PIN, INPUT);
-  attachInterrupt(ITHO_IRQ_PIN, ITHOinterrupt, RISING);
+  attachInterrupt(ITHO_IRQ_PIN, ITHOcheck, FALLING);
 }
 
 void loop(void) {
@@ -65,11 +63,7 @@ void loop(void) {
   }
 }
 
-void ITHOinterrupt() {
-  ITHOticker.once_ms(10, ITHOcheck);
-}
-
-void ITHOcheck() {
+ICACHE_RAM_ATTR void ITHOcheck() {
   if (rf.checkForNewPacket()) {
     IthoCommand cmd = rf.getLastCommand();
     if (++RFTcommandpos > 2) RFTcommandpos = 0;  // store information in next entry of ringbuffers

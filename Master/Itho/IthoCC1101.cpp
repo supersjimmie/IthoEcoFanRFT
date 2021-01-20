@@ -88,7 +88,7 @@ void IthoCC1101::initSendMessage1()
 	writeRegister(CC1101_CHANNR ,0x00);		//00000000
 	writeRegister(CC1101_DEVIATN ,0x40);	//01000000
 	writeRegister(CC1101_FREND0 ,0x17);		//00010111	use index 7 in PA table
-	writeRegister(CC1101_MCSM0 ,0x18);		//00011000	PO timeout Approx. 146µs - 171µs, Auto calibrate When going from IDLE to RX or TX (or FSTXON)
+	writeRegister(CC1101_MCSM0 ,0x18);		//00011000	PO timeout Approx. 146Âµs - 171Âµs, Auto calibrate When going from IDLE to RX or TX (or FSTXON)
 	writeRegister(CC1101_FSCAL3 ,0xA9);		//10101001
 	writeRegister(CC1101_FSCAL2 ,0x2A);		//00101010
 	writeRegister(CC1101_FSCAL1 ,0x00);		//00000000
@@ -176,7 +176,7 @@ void IthoCC1101::initSendMessage2(IthoCommand command)
 	writeRegister(CC1101_CHANNR ,0x00);		//00000000
 	writeRegister(CC1101_DEVIATN ,0x50);	//difference compared to message1
 	writeRegister(CC1101_FREND0 ,0x17);		//00010111	use index 7 in PA table
-	writeRegister(CC1101_MCSM0 ,0x18);		//00011000	PO timeout Approx. 146µs - 171µs, Auto calibrate When going from IDLE to RX or TX (or FSTXON)
+	writeRegister(CC1101_MCSM0 ,0x18);		//00011000	PO timeout Approx. 146Âµs - 171Âµs, Auto calibrate When going from IDLE to RX or TX (or FSTXON)
 	writeRegister(CC1101_FSCAL3 ,0xA9);		//10101001
 	writeRegister(CC1101_FSCAL2 ,0x2A);		//00101010
 	writeRegister(CC1101_FSCAL1 ,0x00);		//00000000
@@ -283,7 +283,7 @@ void IthoCC1101::initReceive()
 	writeRegister(CC1101_FREQ1 ,0x65);
 	writeRegister(CC1101_FREQ0 ,0x6A);
 	writeRegister(CC1101_IOCFG0 ,0x2E);			//High impedance (3-state)
-	writeRegister(CC1101_IOCFG2 ,0x00);			//Assert when RX FIFO is filled or above the RX FIFO threshold. Deassert when (0x00): RX FIFO is drained below threshold, or (0x01): deassert when RX FIFO is empty.
+	writeRegister(CC1101_IOCFG2 ,0x06);			//0x06 Assert when sync word has been sent / received, and de-asserts at the end of the packet. 
 	writeRegister(CC1101_FSCTRL1 ,0x06);
 	writeRegister(CC1101_FSCTRL0 ,0x00);
 	writeRegister(CC1101_MDMCFG4 ,0x5A);
