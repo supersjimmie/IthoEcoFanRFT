@@ -206,6 +206,9 @@ uint8_t CC1101::receiveData(CC1101Packet* packet, uint8_t length)
 	{
 		//empty fifo
 		packet->length = 0;
+		writeCommand(CC1101_SIDLE); //idle    
+		writeCommand(CC1101_SFRX); //flush RX buffer
+		writeCommand(CC1101_SRX); //switch to RX state     		
 	}
 
 	return packet->length;
