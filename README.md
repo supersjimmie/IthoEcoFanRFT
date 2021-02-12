@@ -1,5 +1,19 @@
 # IthoEcoFanRFT
-Cloned from Klusjesman, modified to work on Arduino and ESP8266 with Arduino IDE
+Cloned from supersjimmie which cloned from Klusjesman, 
+
+Complete rework of the itho packet section, cleanup and easier to understand, improved stability
+```
+*  Library structure is preserved, should be a drop in replacement (apart from device id)
+*  Decode incoming messages to direct usable decimals without further bit-shifting
+*  DeviceID is now 3 bytes long and can be set during runtime
+*  Counter2 is now the decimal sum of all bytes in decoded form from deviceType up to the last byte before counter2 subtracted from zero.
+*  Encode outgoing messages in itho compatible format
+*  Added ICACHE_RAM_ATTR to 'void ITHOcheck()' for ESP8266/ESP32 compatibility
+*  Trigger on the falling edge and simplified ISR routine for more robust packet handling
+*  Move SYNC word from 171,170 further down the message to 179,42,163,42 to filter out more non-itho messages in CC1101 hardware
+
+   Tested on ESP8266 & ESP32
+```
 
 Will work with a 868MHz CC1101 module.
 The CC1150 may also work, except for receiving (which is not required for controlling an Itho EcoFan).
