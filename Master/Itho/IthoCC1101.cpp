@@ -259,20 +259,15 @@ void  IthoCC1101::initReceiveMessage()
   }
 }
 
-bool IthoCC1101::checkForNewPacket()
-{
-  if (receiveData(&inMessage, 63))
-  {
-    parseMessageCommand();
+bool IthoCC1101::checkForNewPacket() {
+  if (receiveData(&inMessage, 63) && parseMessageCommand()) {
     initReceiveMessage();
     return true;
   }
-
   return false;
 }
 
-void IthoCC1101::parseMessageCommand()
-{
+bool IthoCC1101::parseMessageCommand() {
   bool isPowerCommand = true;
   bool isHighCommand = true;
   bool isRVHighCommand = true;
@@ -337,6 +332,27 @@ void IthoCC1101::parseMessageCommand()
   if (isJoin2Command)    inIthoPacket.command = IthoJoin;
   if (isRVJoinCommand)   inIthoPacket.command = IthoJoin;
   if (isLeaveCommand)    inIthoPacket.command = IthoLeave;
+  
+
+  uint8_t mLen = 0;
+  if (isPowerCommand || isHighCommand || isMediumCommand || isLowCommand || isStandByCommand || isTimer1Command || isTimer2Command || isTimer3Command) {
+    mLen = 11;
+  }
+  else if (isJoinCommand || isJoin2Command) {
+    mLen = 20;
+  }
+  else if (isLeaveCommand) {
+    mLen = 14;
+  }
+  else {
+    return true;
+  }
+  if (getCounter2(&inIthoPacket, mLen) != inIthoPacket.dataDecoded[mLen]) {
+    inIthoPacket.command = IthoUnknown;
+    return false;
+  }
+  
+  return true;
 }
 
 void IthoCC1101::sendCommand(IthoCommand command)

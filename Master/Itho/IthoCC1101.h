@@ -52,7 +52,7 @@ class IthoCC1101 : protected CC1101
 		~IthoCC1101();
 		
 		//init
-		void init() { CC1101::init(); }											//init,reset CC1101
+		void init() { CC1101::init(); initReceive(); }							//init,reset CC1101
 		void initReceive();
 		uint8_t getLastCounter() { return outIthoPacket.counter; }				//counter is increased before sending a command
 		void setSendTries(uint8_t sendTries) { this->sendTries = sendTries; }
@@ -85,7 +85,7 @@ class IthoCC1101 : protected CC1101
 		void finishTransfer();		
 			
 		//parse received message
-		void parseMessageCommand();
+		bool parseMessageCommand();
 		
 		//send
     void createMessageStart(IthoPacket *itho, CC1101Packet *packet);
