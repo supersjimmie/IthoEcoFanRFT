@@ -86,6 +86,8 @@ class IthoCC1101 : protected CC1101
 			
 		//parse received message
 		bool parseMessageCommand();
+	    bool checkIthoCommand(IthoPacket *itho, const uint8_t commandBytes[]);
+		
 		
 		//send
     void createMessageStart(IthoPacket *itho, CC1101Packet *packet);
