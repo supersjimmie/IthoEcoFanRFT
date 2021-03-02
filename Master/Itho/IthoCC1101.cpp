@@ -19,6 +19,8 @@
 #include <Arduino.h>
 #include <SPI.h>
 
+//#define CRC_FILTER
+
 ////original sync byte pattern
 //#define STARTBYTE 6 //relevant data starts 6 bytes after the sync pattern bytes 170/171
 //#define SYNC1 170
@@ -351,7 +353,7 @@ bool IthoCC1101::parseMessageCommand() {
   if (isRVJoinCommand)   inIthoPacket.command = IthoJoin;
   if (isLeaveCommand)    inIthoPacket.command = IthoLeave;
   
-
+#if defined (CRC_FILTER)
   uint8_t mLen = 0;
   if (isPowerCommand || isHighCommand || isMediumCommand || isLowCommand || isStandByCommand || isTimer1Command || isTimer2Command || isTimer3Command) {
     mLen = 11;
@@ -369,7 +371,8 @@ bool IthoCC1101::parseMessageCommand() {
     inIthoPacket.command = IthoUnknown;
     return false;
   }
-  
+#endif
+
   return true;
 }
 
