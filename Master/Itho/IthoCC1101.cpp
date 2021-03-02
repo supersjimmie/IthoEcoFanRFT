@@ -19,6 +19,24 @@
 #include <Arduino.h>
 #include <SPI.h>
 
+////original sync byte pattern
+//#define STARTBYTE 6 //relevant data starts 6 bytes after the sync pattern bytes 170/171
+//#define SYNC1 170
+//#define SYNC0 171
+//#define MDMCFG2 0x02 //16bit sync word / 16bit specific
+
+////alternative sync byte pattern (filter much more non-itho messages out. Maybe too strict? Testing needed.
+//#define STARTBYTE 0 //relevant data starts 0 bytes after the sync pattern bytes 179/42/171/42
+//#define SYNC1 163 //byte11 = 179, byte13 = 171 with SYNC1 = 163, 179 and 171 differ only by 1 bit
+//#define SYNC0 42
+//#define MDMCFG2 0x03 //32bit sync word / 30bit specific
+
+//alternative sync byte pattern
+#define STARTBYTE 2 //relevant data starts 2 bytes after the sync pattern bytes 179/42
+#define SYNC1 179
+#define SYNC0 42
+#define MDMCFG2 0x02 //16bit sync word / 16bit specific
+
 // default constructor
 IthoCC1101::IthoCC1101(uint8_t counter, uint8_t sendTries) : CC1101()
 {
@@ -712,6 +730,9 @@ void IthoCC1101::messageDecode(CC1101Packet *packet, IthoPacket *itho) {
 
   itho->length = 0;
   int lenInbuf = packet->length;
+  
+  lenInbuf -= STARTBYTE; //correct for sync byte pos
+  
   while (lenInbuf >= 5) {
     lenInbuf -= 5;
     itho->length += 2;
@@ -740,7 +761,7 @@ void IthoCC1101::messageDecode(CC1101Packet *packet, IthoPacket *itho) {
   uint8_t out_j = 4;                                  //bit index
   uint8_t in_bitcounter = 0;                          //process per 10 input bits
 
-  for (int i = 0; i < packet->length; i++) {
+  for (int i = STARTBYTE; i < packet->length; i++) {
     for (int j = 7; j > -1; j--) {
       if (in_bitcounter == 0 || in_bitcounter == 2 || in_bitcounter == 4 || in_bitcounter == 6) { //select input bits for output
         uint8_t x = packet->data[i];   //select input byte
