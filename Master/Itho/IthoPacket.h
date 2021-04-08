@@ -16,6 +16,7 @@ enum IthoCommand
   IthoLow = 4,
   IthoMedium = 5,
   IthoHigh = 6,
+  IthoFull = 7,
   
   IthoTimer1 = 8,
   IthoTimer2 = 9,

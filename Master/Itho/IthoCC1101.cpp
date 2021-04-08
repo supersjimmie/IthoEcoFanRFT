@@ -590,6 +590,8 @@ uint8_t* IthoCC1101::getMessageCommandBytes(IthoCommand command)
       return (uint8_t*)&ithoMessageStandByCommandBytes[0];
     case IthoHigh:
       return (uint8_t*)&ithoMessageHighCommandBytes[0];
+    case IthoFull:
+      return (uint8_t*)&ithoMessageFullCommandBytes[0];
     case IthoMedium:
       return (uint8_t*)&ithoMessageMediumCommandBytes[0];
     case IthoLow:
@@ -633,7 +635,7 @@ uint8_t IthoCC1101::messageEncode(IthoPacket *itho, CC1101Packet *packet) {
     lenOutbuf = itho->length * 2.5;
   }
   else { //is this an issue? inData last byte does not fill out buffer length, add 1 out byte extra, padding is done after encode
-    lenOutbuf = (uint8_t)(itho->length * 2.5) + 0, 5;
+    lenOutbuf = (uint8_t)(itho->length * 2.5) + 0.5;
   }
 
   uint8_t out_bytecounter = 14;   //index of Outbuf, start at offset 14, first part of the message is set manually

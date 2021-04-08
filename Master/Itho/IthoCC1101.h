@@ -17,6 +17,7 @@ const uint8_t ithoPaTableReceive[8] = {0x6F, 0x26, 0x2E, 0x7F, 0x8A, 0x84, 0xCA,
 //message command bytes
 const uint8_t ithoMessageRVHighCommandBytes[] =   {49,224,4,0,0,200};
 const uint8_t ithoMessageHighCommandBytes[] =     {34,241,3,0,4,4};
+const uint8_t ithoMessageFullCommandBytes[] =     {34,241,3,0,4,4};
 const uint8_t ithoMessageMediumCommandBytes[] =   {34,241,3,0,3,4};
 const uint8_t ithoMessageRVMediumCommandBytes[] = {34,241,3,0,3,7};
 const uint8_t ithoMessageLowCommandBytes[] =      {34,241,3,0,2,4};
