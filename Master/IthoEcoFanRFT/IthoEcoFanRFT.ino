@@ -1,15 +1,22 @@
 /*
-   Original Author: Klusjesman
+   Original Author: Klusjesman & supersjimmie
 
    Tested with STK500 + ATMega328P
    GCC-AVR compiler
 
-   Modified by supersjimmie:
-   Code and libraries made compatible with Arduino and ESP8266
-   Tested with Arduino IDE v1.6.5 and 1.6.9
-   For ESP8266 tested with ESP8266 core for Arduino v 2.1.0 and 2.2.0 Stable
-   (See https://github.com/esp8266/Arduino/ )
-
+   Modified by arjenhiemstra:
+   Complete rework of the itho packet section, cleanup and easier to understand
+   Library structure is preserved, should be a drop in replacement (apart from device id) 
+   Decode incoming messages to direct usable decimals without further bit-shifting
+   DeviceID is now 3 bytes long and can be set during runtime
+   Counter2 is the decimal sum of all bytes in decoded form from deviceType up to the last byte before counter2 subtracted from zero.
+   Encode outgoing messages in itho compatible format
+   Added ICACHE_RAM_ATTR to 'void ITHOcheck()' for ESP8266/ESP32 compatibility
+   Trigger on the falling edge and simplified ISR routine for more robust packet handling
+   Move SYNC word from 171,170 further down the message to 179,42,163,42 to filter out more non-itho messages in CC1101 hardware
+   Check validity of incoming message
+   
+   Tested on ESP8266 & ESP32   
 */
 
 /*
@@ -27,15 +34,13 @@
 #include <SPI.h>
 #include "IthoCC1101.h"
 #include "IthoPacket.h"
-#include <Ticker.h>
 
-#define ITHO_IRQ_PIN D2
+#define ITHO_IRQ_PIN 4 //D2(GPIO4) on NodeMCU
 
 IthoCC1101 rf;
 IthoPacket packet;
-Ticker ITHOticker;
 
-const uint8_t RFTid[] = {106, 170, 106, 101, 154, 107, 154, 86}; // my ID
+const uint8_t RFTid[] = {11, 22, 33}; // my ID
 
 bool ITHOhasPacket = false;
 IthoCommand RFTcommand[3] = {IthoUnknown, IthoUnknown, IthoUnknown};
@@ -50,37 +55,34 @@ void setup(void) {
   Serial.begin(115200);
   delay(500);
   Serial.println("setup begin");
+  rf.setDeviceID(13, 123, 42); //DeviceID used to send commands, can also be changed on the fly for multi itho control
   rf.init();
   Serial.println("setup done");
   sendRegister();
   Serial.println("join command sent");
   pinMode(ITHO_IRQ_PIN, INPUT);
-  attachInterrupt(ITHO_IRQ_PIN, ITHOinterrupt, RISING);
+  attachInterrupt(ITHO_IRQ_PIN, ITHOcheck, FALLING);
 }
 
 void loop(void) {
   // do whatever you want, check (and reset) the ITHOhasPacket flag whenever you like
   if (ITHOhasPacket) {
-    showPacket();
-  }
-}
-
-void ITHOinterrupt() {
-  ITHOticker.once_ms(10, ITHOcheck);
-}
-
-void ITHOcheck() {
-  if (rf.checkForNewPacket()) {
-    IthoCommand cmd = rf.getLastCommand();
-    if (++RFTcommandpos > 2) RFTcommandpos = 0;  // store information in next entry of ringbuffers
-    RFTcommand[RFTcommandpos] = cmd;
-    RFTRSSI[RFTcommandpos]    = rf.ReadRSSI();
-    bool chk = rf.checkID(RFTid);
-    RFTidChk[RFTcommandpos]   = chk;
-    if ((cmd != IthoUnknown) && chk) {  // only act on good cmd and correct id.
-      ITHOhasPacket = true;
+    if (rf.checkForNewPacket()) {
+      IthoCommand cmd = rf.getLastCommand();
+      if (++RFTcommandpos > 2) RFTcommandpos = 0;  // store information in next entry of ringbuffers
+      RFTcommand[RFTcommandpos] = cmd;
+      RFTRSSI[RFTcommandpos]    = rf.ReadRSSI();
+      bool chk = rf.checkID(RFTid);
+      RFTidChk[RFTcommandpos]   = chk;
+      if ((cmd != IthoUnknown)) {  // only act on good cmd and correct id.
+        showPacket();
+      }
     }
   }
+}
+
+ICACHE_RAM_ATTR void ITHOcheck() {
+  ITHOhasPacket = true;
 }
 
 void showPacket() {
@@ -112,7 +114,7 @@ void showPacket() {
   Serial.print(F(" "));
   Serial.print(RFTidChk[2]);
   Serial.print(F(" / Last ID: "));
-  Serial.print(rf.getLastIDstr());
+  Serial.print(rf.getLastIDstr(false));
 
   Serial.print(F(" / Command = "));
   //show command
